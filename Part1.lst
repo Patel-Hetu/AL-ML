@@ -1,0 +1,55 @@
+(ARCTools Version 2.1.2)
+ HexLoc     DecLoc    MachWord   Label        Instruction                Comment
+                                              .org 3000                  
+                                              .equ 4048                  ! result is where the caller program will store the final result from %r3
+                                                                         
+00000bb8  0000003000  9c802080                addcc %r0, 128, %r14       ! stack is being initialized at location 128+ %r0 which is 128
+                                                                         
+00000bbc  0000003004  c2002c24                ld [3108], %r1             ! loading the input in r1
+00000bc0  0000003008  84807ffe                addcc %r1, -2, %r2         ! Initializes r2 to be the number of times the multiplication will go on for 'input-2' times
+00000bc4  0000003012  88807fff                addcc %r1, -1, %r4         ! Initializes r4 this is the main loop that will run for 'input - 1' times in order to give us 'input * (input-1)! ' 
+                                                                         
+00000bc8  0000003016  9c83bffc                addcc %r14, -4, %r14       ! reserving memory by going backwards since it is a stack in order to store r1
+00000bcc  0000003020  c2238000                st %r1, %r14               ! storing r1
+                                                                         
+00000bd0  0000003024  9c83bffc                addcc %r14, -4, %r14       ! reserving memory by going backwards since it is a stack in order to store r2
+00000bd4  0000003028  c4238000                st %r2, %r14               ! storing r2
+                                                                         
+00000bd8  0000003032  9c83bffc                addcc %r14, -4, %r14       ! reserving memory by going backwards since it is a stack in order to store r4
+00000bdc  0000003036  c8238000                st %r4, %r14               ! storing r4
+                                                                         
+00000be0  0000003040  86000000                add %r0, %r0, %r3          ! Initializes r3 to be 0, this will later store the sum
+                                                                         
+00000be4  0000003044  40000003                call 3                     ! subroutine 'myFact' is being called
+                                                                         
+00000be8  0000003048  c6202fd0                st %r3, [4048]             ! the subroutine will then make changes to %r3 and in this line it will be stored in result
+                                                                         
+00000bec  0000003052  ffffffff                halt                       
+                                                                         
+                                                                         
+00000bf0  0000003056  80890004  myFact:       andcc %r4, %r4, %r0        ! Check if r4 is 0, if it is then we go to the next part of the factorial,eg if input is 6 then this is where we go to 5x4
+00000bf4  0000003060  02800004                be 4                       ! next is where r4 is changed to count down again from r4 -1 (i.e. to give us the next bit of the factorial)
+00000bf8  0000003064  86004003                add %r1, %r3, %r3          ! r3 is where the result is stored from r1, first it is 6+6+... and then 30+30+.. and so on until it is 360+360
+00000bfc  0000003068  88813fff                addcc %r4, -1, %r4         
+00000c00  0000003072  10bffffc                ba -4                      
+                                                                         
+00000c04  0000003076  8800bfff  next:         add %r2, -1, %r4           
+00000c08  0000003080  8400bfff                add %r2, -1, %r2           
+00000c0c  0000003084  8200c000                add %r3, %r0, %r1          
+00000c10  0000003088  80888002                andcc %r2, %r2, %r0        
+00000c14  0000003092  02800002                be 2                       
+00000c18  0000003096  10bffff6                ba -10                     
+00000c1c  0000003100            end:                                     
+                                                                         
+00000c20  0000003104  81c3e004                jmpl %r15, 4, %r0          
+                                                                         
+00000c24  0000003108  00000009  input:                                   
+                                                                         
+                                                                         
+
+--- Symbol Table ---
+result: 4048
+end: 3100
+input: 3108
+myFact: 3056
+next: 3076
